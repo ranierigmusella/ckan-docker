@@ -2,13 +2,14 @@ FROM alpine:3.13
 
 # Internals, you probably don't need to change these
 ENV APP_DIR=/srv/app
-ENV SRC_DIR=/srv/app/src
+ENV SRC_DIR=${APP_DIR}/src
+ENV DATA_DIR=${APP_DIR}/data
 ENV CKAN_INI=${APP_DIR}/ckan.ini
 ENV PIP_SRC=${SRC_DIR}
 ENV CKAN_STORAGE_PATH=/var/lib/ckan
 ENV GIT_URL=https://github.com/ckan/ckan.git
 # CKAN version to build
-ENV GIT_BRANCH=ckan-2.9.4
+ENV GIT_BRANCH=ckan-2.9.5
 # Customize these on the .env file if needed
 ENV CKAN_SITE_URL=http://localhost:5000
 ENV CKAN__PLUGINS image_view text_view recline_view datastore datapusher envvars
@@ -61,9 +62,10 @@ RUN apk add --no-cache tzdata \
     pip3 install supervisor && \
     mkdir /etc/supervisord.d && \
     #pip wheel --wheel-dir=/wheels uwsgi gevent && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     rm -rf ${SRC_DIR}/get-pip.py
 
-COPY common/supervisord.conf /etc
+COPY common/supervisord.conf /etc/
 
 # Install CKAN
 RUN pip3 install -e git+${GIT_URL}@${GIT_BRANCH}#egg=ckan && \
@@ -73,10 +75,12 @@ RUN pip3 install -e git+${GIT_URL}@${GIT_BRANCH}#egg=ckan && \
     pip3 install --no-binary :all: -r requirements.txt && \
     # Install CKAN envvars to support loading config from environment variables
     pip3 install -e git+https://github.com/okfn/ckanext-envvars.git#egg=ckanext-envvars && \
+    mkdir ${DATA_DIR} && \
     # Create and update CKAN config
     ckan generate config ${CKAN_INI} && \
     ckan config-tool ${CKAN_INI} "ckan.plugins = ${CKAN__PLUGINS}" && \
-    ckan config-tool ${CKAN_INI} "ckan.site_url = ${CKAN__SITE_URL}"
+    ckan config-tool ${CKAN_INI} "ckan.site_url = ${CKAN__SITE_URL}" && \
+    ckan config-tool ${CKAN_INI} "ckan.webassets.path = ${DATA_DIR}/webassets"
 
 # Create a local user and group to run the app
 RUN addgroup -g 92 -S ckan && \
@@ -89,7 +93,7 @@ RUN mkdir -p $CKAN_STORAGE_PATH && \
 COPY 2.9/setup/prerun.py ${APP_DIR}
 COPY 2.9/setup/supervisor.worker.conf /etc/supervisord.d/worker.conf
 COPY 2.9/setup/start_ckan.sh ${APP_DIR}
-ADD https://raw.githubusercontent.com/ckan/ckan/${GIT_BRANCH}/wsgi.py ${APP_DIR}
+RUN cp ${SRC_DIR}/ckan/wsgi.py ${APP_DIR}/
 
 # Create entrypoint directory for children image scripts
 ONBUILD RUN mkdir /docker-entrypoint.d

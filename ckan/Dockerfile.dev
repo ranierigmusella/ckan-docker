@@ -1,18 +1,33 @@
 FROM openknowledge/ckan-dev:2.9
 
-MAINTAINER Your Name Here <you@example.com>
+LABEL  MANTEINER="Ranieri Musella"
 
 # Set timezone
 ARG TZ
 RUN cp /usr/share/zoneinfo/$TZ /etc/localtime
 RUN echo $TZ > /etc/timezone
-
+ENV CLOUD_STORAGE_GIT_BRANCH=py3
 # Install any extensions needed by your CKAN instance
 # (Make sure to add the plugins to CKAN__PLUGINS in the .env file)
 # For instance:
-#RUN pip install -e git+https://github.com/ckan/ckanext-pages.git#egg=ckanext-pages && \
+
+COPY cloudstorage_settings.txt ${APP_DIR}/
+# RUN pip install -e git+https://github.com/open-data/ckanext-cloudstorage.git#egg=ckanext-cloudstorage && \
+# RUN pip install -e git+https://github.com/ranierigmusella/ckanext-cloudstorage.git#egg=ckanext-cloudstorage && \
+RUN pip install azure-storage && \ 
+    pip install -e git+https://github.com/ranierigmusella/ckanext-cloudstorage.git@${CLOUD_STORAGE_GIT_BRANCH}#egg=ckanext-cloudstorage && \
+    ckan config-tool ckan.ini -s app:main -f cloudstorage_settings.txt
 #    pip install -e git+https://github.com/ckan/ckanext-dcat.git@v0.0.6#egg=ckanext-dcat && \
-#    pip install -r https://raw.githubusercontent.com/ckan/ckanext-dcat/v0.0.6/requirements.txt
+#    pip install -r https://raw.githubusercontent.com/ckan/ckanext-dcat/v0.0.6/requirements.txt \
+#     \
+RUN rm -f ${APP_DIR}/cloudstorage_settings.txt
+
+COPY xloader_settings.txt ${APP_DIR}/
+RUN pip install ckanext-xloader && \
+    pip install -r https://raw.githubusercontent.com/ckan/ckanext-xloader/master/requirements.txt && \
+    pip install -U requests[security] && \
+    ckan config-tool ckan.ini -s app:main -f xloader_settings.txt
+RUN rm -f ${APP_DIR}/xloader_settings.txt
 
 # Clone the extension(s) your are writing for your own project in the `src` folder
 # to get them mounted in this image at runtime

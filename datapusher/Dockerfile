@@ -1,11 +1,15 @@
 FROM alpine:3.13
 
-MAINTAINER Open Knowledge Foundation
+LABEL  MANTEINER="Open Knowledge Foundation"
 
 ENV APP_DIR=/srv/app
 ENV GIT_BRANCH 0.0.17
 ENV GIT_URL https://github.com/ckan/datapusher.git
 ENV JOB_CONFIG ${APP_DIR}/datapusher_settings.py
+ENV DATAPUSHER_MAX_CONTENT_LENGTH 1024000
+ENV DATAPUSHER_CHUNK_SIZE 16384
+ENV DATAPUSHER_CHUNK_INSERT_ROWS 250
+ENV DATAPUSHER_DOWNLOAD_TIMEOUT 30
 
 WORKDIR ${APP_DIR}
 
@@ -16,6 +20,7 @@ RUN apk add --no-cache \
     libffi-dev \
     libressl-dev \
     libxslt \
+    libmagic \
     uwsgi \
     uwsgi-http \
     uwsgi-corerouter \
@@ -33,7 +38,9 @@ RUN apk add --no-cache \
     cargo
 
 RUN mkdir ${APP_DIR}/src && cd ${APP_DIR}/src && \
-    git clone -b ${GIT_BRANCH} --depth=1 --single-branch ${GIT_URL} && \
+    # The branch 0.0.17 has a commit problem with the settings file. I take the last for now...
+    # git clone -b ${GIT_BRANCH} --depth=1 --single-branch ${GIT_URL} && \
+    git clone ${GIT_URL} && \
     cd datapusher && \
     python3 setup.py install && \
     pip3 install --no-cache-dir -r requirements.txt

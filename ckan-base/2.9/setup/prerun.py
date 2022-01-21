@@ -187,6 +187,60 @@ def create_sysadmin():
         subprocess.call(command)
         print("[prerun] Made user {0} a sysadmin".format(name))
 
+def init_harvester_db_tables():
+    plugins = os.environ.get("CKAN__PLUGINS", "")
+    if "ckan_harvester" in plugins.strip().split(" "):
+        print("[prerun] Harvester DB Tables init - Started")
+        command = ["ckan", "-c", ckan_ini, "harvester", "initdb"]
+        try:
+            subp = subprocess.Popen(
+                command, stdout=subprocess.PIPE
+            )
+            print("[prerun] Harvester DB Tables init - Ended")
+            print(subp.stdout.read())
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+            print("[prerun] Harvester DB Tables init - Failed")
+
+def init_spatial_db_tables():
+    plugins = os.environ.get("CKAN__PLUGINS", "")
+    p = plugins.strip().split(" ")
+    if "spatial_metadata" in p and "spatial_query" in p:
+        print("[prerun] Spatial DB Tables init - Started")
+        command = ["ckan", "-c", ckan_ini, "spatial", "initdb"]
+        try:
+            subp = subprocess.Popen(
+                command, stdout=subprocess.PIPE
+            )
+            print(subp.stdout.read())
+            conn_str = os.environ.get("CKAN_SQLALCHEMY_URL")
+            ckan_database = conn_str.split('postgresql://')[1].split(':')[0]
+
+            connection = psycopg2.connect(conn_str)
+            cursor = connection.cursor()
+
+            statement_sql = f"""
+                ALTER VIEW geometry_columns OWNER TO {ckan_database};
+                ALTER TABLE spatial_ref_sys OWNER TO {ckan_database};
+            """
+
+            cursor.execute(statement_sql)
+            for notice in connection.notices:
+                print(notice)
+            
+            connection.commit()
+            cursor = connection.cursor()
+            print("[prerun] Spatial DB Tables init - Ended")
+            
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+            print("[prerun] Spatial DB Tables init - Failed")
+        except psycopg2.Error as e:
+            print(e)
+            print("[prerun] Spatial DB Tables init - Failed")
+        finally:
+            cursor.close()
+            connection.close()
 
 if __name__ == "__main__":
 
@@ -202,3 +256,5 @@ if __name__ == "__main__":
         init_datastore_db()
         check_solr_connection()
         create_sysadmin()
+        init_harvester_db_tables()
+        init_spatial_db_tables()

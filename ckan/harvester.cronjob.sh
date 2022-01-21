@@ -1,0 +1,1 @@
+ckan -c $CKAN_INI harvester run

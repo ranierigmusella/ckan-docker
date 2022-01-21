@@ -1,5 +1,6 @@
-FROM postgres:12-alpine
-MAINTAINER Open Knowledge International
+# FROM postgres:12-alpine
+FROM postgis/postgis:13-3.1-alpine
+LABEL MANTAINER="Open Knowledge International"
 
 # Allow connections; we don't map out any ports so only linked docker containers can connect
 RUN echo "host all  all    0.0.0.0/0  md5" >> /var/lib/postgresql/data/pg_hba.conf
@@ -11,4 +12,4 @@ ARG POSTGRES_PASSWORD
 ARG DATASTORE_READONLY_PASSWORD
 
 # Include extra setup scripts (eg datastore)
-ADD docker-entrypoint-initdb.d /docker-entrypoint-initdb.d
+COPY docker-entrypoint-initdb.d /docker-entrypoint-initdb.d
