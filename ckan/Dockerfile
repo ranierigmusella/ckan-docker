@@ -1,4 +1,4 @@
-FROM ranierimusella/ckan:ckan-base-2.9.4 as ckan-with-extensions
+FROM ranierimusella/ckan:ckan-base-2.9.5 as ckan-with-extensions
 
 LABEL  MANTEINER="Ranieri Musella"
 
