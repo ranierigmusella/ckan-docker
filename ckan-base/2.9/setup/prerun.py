@@ -242,6 +242,21 @@ def init_spatial_db_tables():
             cursor.close()
             connection.close()
 
+def init_taxonomy_db_tables():
+    plugins = os.environ.get("CKAN__PLUGINS", "")
+    if "taxonomy" in plugins.strip().split(" "):
+        print("[prerun] Taxonomy DB Tables init - Started")
+        command = ["ckan", "-c", ckan_ini, "taxonomy", "init"]
+        try:
+            subp = subprocess.Popen(
+                command, stdout=subprocess.PIPE
+            )
+            print("[prerun] Taxonomy DB Tables init - Ended")
+            print(subp.stdout.read())
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+            print("[prerun] Taxonomy DB Tables init - Failed")
+
 if __name__ == "__main__":
 
     maintenance = os.environ.get("MAINTENANCE_MODE", "").lower() == "true"
@@ -254,7 +269,8 @@ if __name__ == "__main__":
         update_plugins()
         check_datastore_db_connection()
         init_datastore_db()
-        check_solr_connection()
         create_sysadmin()
         init_harvester_db_tables()
         init_spatial_db_tables()
+        init_taxonomy_db_tables()
+        check_solr_connection()

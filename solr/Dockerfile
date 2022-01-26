@@ -1,30 +1,23 @@
-FROM solr:6.2-alpine
-MAINTAINER Open Knowledge
+FROM solr:8
 
-# Enviroment
-ENV SOLR_CORE ckan
-# Adjust to your needs
-ENV CKAN_VERSION dev-v2.9
+EXPOSE 8983
 
-# User
+# TODO: Update with new release branch when merged
+ARG CKAN_BRANCH="master"
+
+ENV SOLR_CONFIG_DIR="/opt/solr/server/solr/configsets"
+ENV SOLR_SCHEMA_FILE="${SOLR_CONFIG_DIR}/ckan/conf/managed-schema"
+
 USER root
 
-# Create Directories
-RUN mkdir -p /opt/solr/server/solr/$SOLR_CORE/conf
-RUN mkdir -p /opt/solr/server/solr/$SOLR_CORE/data
+# Create a CKAN configset by copying the default one
+RUN cp -R $SOLR_CONFIG_DIR/_default $SOLR_CONFIG_DIR/ckan
 
-# Adding Files
-ADD solrconfig.xml \
-https://raw.githubusercontent.com/ckan/ckan/$CKAN_VERSION/ckan/config/solr/schema.xml \
-https://raw.githubusercontent.com/apache/lucene-solr/releases/lucene-solr/6.6.6/solr/server/solr/configsets/basic_configs/conf/currency.xml \
-https://raw.githubusercontent.com/apache/lucene-solr/releases/lucene-solr/6.6.6/solr/server/solr/configsets/basic_configs/conf/synonyms.txt \
-https://raw.githubusercontent.com/apache/lucene-solr/releases/lucene-solr/6.6.6/solr/server/solr/configsets/basic_configs/conf/stopwords.txt \
-https://raw.githubusercontent.com/apache/lucene-solr/releases/lucene-solr/6.6.6/solr/server/solr/configsets/basic_configs/conf/protwords.txt \
-https://raw.githubusercontent.com/apache/lucene-solr/releases/lucene-solr/6.6.6/solr/server/solr/configsets/data_driven_schema_configs/conf/elevate.xml \
-/opt/solr/server/solr/$SOLR_CORE/conf/
+# Update the schema
+# ADD https://raw.githubusercontent.com/ckan/ckan/$CKAN_BRANCH/ckan/config/solr/schema.xml $SOLR_SCHEMA_FILE
+COPY ./managed-schema ${SOLR_SCHEMA_FILE}
+RUN chmod 644 $SOLR_SCHEMA_FILE 
 
-# Create Core.properties
-RUN echo name=$SOLR_CORE > /opt/solr/server/solr/$SOLR_CORE/core.properties
+USER solr
 
-# Giving ownership to Solr
-RUN chown -R $SOLR_USER:$SOLR_USER /opt/solr/server/solr/$SOLR_CORE
+CMD ["sh", "-c", "solr-precreate ckan $SOLR_CONFIG_DIR/ckan"]

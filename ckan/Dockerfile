@@ -10,14 +10,14 @@ RUN cp /usr/share/zoneinfo/$TZ /etc/localtime
 
 ## Cloudstorage Extension
 ENV CLOUD_STORAGE_GIT_BRANCH=py3
-COPY cloudstorage_settings.txt ${APP_DIR}/
+COPY ./settings/cloudstorage_settings.txt ${APP_DIR}/
 RUN pip install azure-storage && \ 
     pip install -e git+https://github.com/ranierigmusella/ckanext-cloudstorage.git@${CLOUD_STORAGE_GIT_BRANCH}#egg=ckanext-cloudstorage && \
     ckan config-tool ${CKAN_INI} -s app:main -f cloudstorage_settings.txt
 RUN rm -f ${APP_DIR}/cloudstorage_settings.txt
 
 ## XLoader Extension
-COPY xloader_settings.txt ${APP_DIR}/
+COPY ./settings/xloader_settings.txt ${APP_DIR}/
 RUN pip install ckanext-xloader && \
     pip install -r https://raw.githubusercontent.com/ckan/ckanext-xloader/master/requirements.txt && \
     pip install -U requests[security] && \
@@ -30,25 +30,28 @@ RUN pip install -e git+https://github.com/ranierigmusella/ckanext-odata.git#egg=
 ## Spatial Extension
 
 ## Harvester Extension - Required by the Spatial Extension
-## https://github.com/ckan/ckanext-harvest/ --> Complete the Production setup from point 4.
 
 RUN apk add --no-cache redis && \
     pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest && \
     pip install -r ${SRC_DIR}/ckanext-harvest/pip-requirements.txt && \
     ckan config-tool ${CKAN_INI} -s app:main "ckan.harvest.mq.type = redis"
-COPY ./harvester.worker.conf /etc/supervisord.d/harvester.worker.conf
-COPY ./harvester.cronjob.sh /etc/periodic/15min/
+COPY ./settings/harvester.worker.conf /etc/supervisord.d/harvester.worker.conf
+COPY ./settings/harvester.cronjob.sh /etc/periodic/15min/
 
 RUN apk add --no-cache \ 
     geos \
     geos-dev \
     proj-util \
-    proj-dev 
-
-RUN pip install ckantoolkit
-RUN pip install -e "git+https://github.com/ckan/ckanext-spatial.git#egg=ckanext-spatial" && \
+    proj-dev && \
+    pip install ckantoolkit && \
+    pip install -e "git+https://github.com/ckan/ckanext-spatial.git#egg=ckanext-spatial" && \
     pip install -r ${SRC_DIR}/ckanext-spatial/pip-requirements.txt && \
     ckan config-tool ${CKAN_INI} -s app:main "ckanext.spatial.search_backend = solr" "ckan.spatial.srid = 4326"
+
+COPY ./file_patch/search.html ${CKAN_DIR}/ckan/templates/package/
+COPY ./file_patch/read_base.html ${CKAN_DIR}/ckan/templates/package/
+COPY ./file_patch/read.html ${CKAN_DIR}/ckan/templates/package/
+
 
 ## Geoview Extension
 RUN git clone https://github.com/ckan/ckanext-geoview.git ${SRC_DIR}/ckanext-geoview && \
@@ -59,18 +62,30 @@ RUN git clone https://github.com/ckan/ckanext-geoview.git ${SRC_DIR}/ckanext-geo
     ckan config-tool ${CKAN_INI} -s app:main "ckanext.geoview.geojson.max_file_size = 3221225472" "ckan.views.default_views = image_view text_view recline_view geo_view geojson_view wmts_view shp_view" && \
     cd ${APP_DIR}
 
-# redis in Azure fix
-RUN mv ${CKAN_DIR}/ckan/lib/redis.py ${CKAN_DIR}/ckan/lib/redis_official.py
-COPY redis.py ${CKAN_DIR}/ckan/lib/
+## DCAT Extension
+RUN pip install -e git+https://github.com/ckan/ckanext-dcat.git#egg=ckanext-dcat && \
+    pip install -r ${SRC_DIR}/ckanext-dcat/requirements.txt
 
-FROM ckan-with-extensions
+## Site Search Extension
+RUN pip install -e git+https://github.com/okfn/ckanext-sitesearch.git#egg=ckanext-sitesearch && \
+    pip install -r ${SRC_DIR}/ckanext-sitesearch/requirements.txt
 
 ## Tag-Taxonomy Extension
-# RUN cd ${SRC_DIR} && \
-#     git clone https://github.com/ranierigmusella/ckanext-taxonomy.git && \
-#     cd ./ckanext-taxonomy && \
-#     python setup.py install
-# RUN ckan -c ${CKAN_INI} taxonomy init
+## Example files
+## ckan -c ckan.ini taxonomy load --filename ./src/ckanext-taxonomy/dgu-themes.rdf --name dgu --title "DGU Themes" --uri "http://data.gov.uk/themes"
+## ckan -c ckan.ini taxonomy load --filename ./src/ckanext-taxonomy/COFOG.rdf --name cofog --title cofog --uri "http://unstats.un.org/unsd/cr/registry/regcst.asp?Cl=4"
+
+RUN pip install -e git+https://github.com/ranierigmusella/python-skos.git#egg=python-skos && \
+    cd ${SRC_DIR} && \
+    git clone https://github.com/ranierigmusella/ckanext-taxonomy.git && \
+    cd ./ckanext-taxonomy && \
+    python setup.py install
+
+# redis in Azure fix
+RUN mv ${CKAN_DIR}/ckan/lib/redis.py ${CKAN_DIR}/ckan/lib/redis_official.py
+COPY ./file_patch/redis.py ${CKAN_DIR}/ckan/lib/
+
+FROM ckan-with-extensions
 
 # Apply any patches needed to CKAN core or any of the built extensions (not the
 # runtime mounted ones)
