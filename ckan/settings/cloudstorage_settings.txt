@@ -1,4 +1,4 @@
 ckanext.cloudstorage.driver = AZURE_BLOBS
 ckanext.cloudstorage.container_name = datahub
-ckanext.cloudstorage.driver_options = {'key': 'undpngddlsdev01', 'secret': 'WUgVkCXygKEh1KM4IuSPtGoWh5IK4FTSiLrCxquNOBZhSGlb22LQCZy7ztBfbHTNPD+Y246Z03d5W2Gm3vpbOw=='}
+ckanext.cloudstorage.driver_options = {'key': '', 'secret': ''}
 ckanext.cloudstorage.use_secure_urls = 1
