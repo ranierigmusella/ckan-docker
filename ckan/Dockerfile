@@ -50,8 +50,6 @@ RUN apk add --no-cache \
 
 COPY ./file_patch/search.html ${CKAN_DIR}/ckan/templates/package/
 COPY ./file_patch/read_base.html ${CKAN_DIR}/ckan/templates/package/
-COPY ./file_patch/read.html ${CKAN_DIR}/ckan/templates/package/
-
 
 ## Geoview Extension
 RUN git clone https://github.com/ckan/ckanext-geoview.git ${SRC_DIR}/ckanext-geoview && \
@@ -59,7 +57,7 @@ RUN git clone https://github.com/ckan/ckanext-geoview.git ${SRC_DIR}/ckanext-geo
     cd ${SRC_DIR}/ckanext-geoview/ && \
     python setup.py install && \
     python setup.py develop && \
-    ckan config-tool ${CKAN_INI} -s app:main "ckanext.geoview.geojson.max_file_size = 3221225472" "ckan.views.default_views = image_view text_view recline_view geo_view geojson_view wmts_view shp_view" && \
+    ckan config-tool ${CKAN_INI} -s app:main "ckanext.geoview.geojson.max_file_size = 3221225472" "ckan.views.default_views = image_view text_view recline_view geojson_view wmts_view shp_view" && \
     cd ${APP_DIR}
 
 ## DCAT Extension
