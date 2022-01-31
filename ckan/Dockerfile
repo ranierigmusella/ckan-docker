@@ -9,12 +9,13 @@ RUN echo $TZ > /etc/timezone
 RUN cp /usr/share/zoneinfo/$TZ /etc/localtime
 
 ## Cloudstorage Extension
-ENV CLOUD_STORAGE_GIT_BRANCH=py3
-COPY ./settings/cloudstorage_settings.txt ${APP_DIR}/
-RUN pip install azure-storage && \ 
-    pip install -e git+https://github.com/ranierigmusella/ckanext-cloudstorage.git@${CLOUD_STORAGE_GIT_BRANCH}#egg=ckanext-cloudstorage && \
-    ckan config-tool ${CKAN_INI} -s app:main -f cloudstorage_settings.txt
-RUN rm -f ${APP_DIR}/cloudstorage_settings.txt
+## The reuired dependency is deprecated and it doesen't work well with all extensions
+# ENV CLOUD_STORAGE_GIT_BRANCH=py3
+# COPY ./settings/cloudstorage_settings.txt ${APP_DIR}/
+# RUN pip install azure-storage && \ 
+#     pip install -e git+https://github.com/ranierigmusella/ckanext-cloudstorage.git@${CLOUD_STORAGE_GIT_BRANCH}#egg=ckanext-cloudstorage && \
+#     ckan config-tool ${CKAN_INI} -s app:main -f cloudstorage_settings.txt
+# RUN rm -f ${APP_DIR}/cloudstorage_settings.txt
 
 ## XLoader Extension
 COPY ./settings/xloader_settings.txt ${APP_DIR}/

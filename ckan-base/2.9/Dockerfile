@@ -6,7 +6,7 @@ ENV SRC_DIR=${APP_DIR}/src
 ENV DATA_DIR=${APP_DIR}/data
 ENV CKAN_INI=${APP_DIR}/ckan.ini
 ENV PIP_SRC=${SRC_DIR}
-ENV CKAN_STORAGE_PATH=/var/lib/ckan
+ENV CKAN_STORAGE_PATH=/var/lib/ckan/default
 ENV GIT_URL=https://github.com/ckan/ckan.git
 # CKAN version to build
 ENV GIT_BRANCH=ckan-2.9.5

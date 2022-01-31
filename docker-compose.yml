@@ -21,17 +21,17 @@ services:
     volumes:
       - ckan_storage:/var/lib/ckan
 
-  # datapusher:
-  #   container_name: datapusher
-  #   build:
-  #     context: datapusher/
-  #   ports:
-  #     - "8800:8800"
-  #   environment:
-  #     - DATAPUSHER_MAX_CONTENT_LENGTH=${DATAPUSHER_MAX_CONTENT_LENGTH}
-  #     - DATAPUSHER_CHUNK_SIZE=${DATAPUSHER_CHUNK_SIZE}
-  #     - DATAPUSHER_CHUNK_INSERT_ROWS=${DATAPUSHER_CHUNK_INSERT_ROWS}
-  #     - DATAPUSHER_DOWNLOAD_TIMEOUT=${DATAPUSHER_DOWNLOAD_TIMEOUT}
+  datapusher:
+    container_name: datapusher
+    build:
+      context: datapusher/
+    ports:
+      - "8800:8800"
+    environment:
+      - DATAPUSHER_MAX_CONTENT_LENGTH=${DATAPUSHER_MAX_CONTENT_LENGTH}
+      - DATAPUSHER_CHUNK_SIZE=${DATAPUSHER_CHUNK_SIZE}
+      - DATAPUSHER_CHUNK_INSERT_ROWS=${DATAPUSHER_CHUNK_INSERT_ROWS}
+      - DATAPUSHER_DOWNLOAD_TIMEOUT=${DATAPUSHER_DOWNLOAD_TIMEOUT}
 
   db:
     container_name: db
