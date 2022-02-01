@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import subprocess
@@ -67,8 +68,9 @@ def check_solr_connection(retry=None):
 
     if retry is None:
         retry = RETRY
+        print("[prerun] Solr connectivity test.")
     elif retry == 0:
-        print("[prerun] Giving up after 5 tries...")
+        print(f"[prerun] Giving up after {RETRY} tries...")
         sys.exit(1)
 
     url = os.environ.get("CKAN_SOLR_URL", "")
@@ -82,7 +84,8 @@ def check_solr_connection(retry=None):
         time.sleep(10)
         check_solr_connection(retry=retry - 1)
     else:
-        eval(connection.read())
+        res = json.loads(connection.read())
+        print("[prerun] Solr has responded.")
 
 
 def init_db():
