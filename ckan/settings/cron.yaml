@@ -1,0 +1,19 @@
+jobs:
+  - name: CKAN_PageViewTrackRefresh
+    command: ckan -c $CKAN_INI tracking update && ckan -c $CKAN_INI search-index rebuild -r
+    shell: /bin/sh
+    schedule: "0 * * * *"
+    failsWhen:
+      producesStdout: false
+      producesStderr: false
+      nonzeroReturn: true
+      always: false
+  - name: CKAN_HarvesterRun
+    command: ckan -c $CKAN_INI harvester run
+    shell: /bin/sh
+    schedule: "*/15 * * * *"
+    failsWhen:
+      producesStdout: false
+      producesStderr: false
+      nonzeroReturn: true
+      always: false

@@ -37,7 +37,6 @@ RUN apk add --no-cache redis && \
     pip install -r ${SRC_DIR}/ckanext-harvest/pip-requirements.txt && \
     ckan config-tool ${CKAN_INI} -s app:main "ckan.harvest.mq.type = redis"
 COPY ./settings/harvester.worker.conf /etc/supervisord.d/harvester.worker.conf
-COPY ./settings/harvester.cronjob.sh /etc/periodic/15min/
 
 RUN apk add --no-cache \ 
     geos \
@@ -80,9 +79,24 @@ RUN pip install -e git+https://github.com/ranierigmusella/python-skos.git#egg=py
     cd ./ckanext-taxonomy && \
     python setup.py install
 
-# redis in Azure fix
+## Stats Extension
+
+RUN ckan config-tool ${CKAN_INI} -s app:main "ckanext.stats.cache_enabled = true" 
+
+## Page View Tracking Extension
+
+RUN ckan config-tool ${CKAN_INI} -s app:main "ckan.tracking_enabled = true"
+
+## Redis in Azure fix
+
 RUN mv ${CKAN_DIR}/ckan/lib/redis.py ${CKAN_DIR}/ckan/lib/redis_official.py
 COPY ./file_patch/redis.py ${CKAN_DIR}/ckan/lib/
+
+## Cronjobs setup
+
+RUN pip install yacron
+COPY ./settings/cron.yaml ${APP_DIR}/
+COPY ./settings/cronjobs.conf /etc/supervisord.d/cronjobs.conf
 
 FROM ckan-with-extensions
 
