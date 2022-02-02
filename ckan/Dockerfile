@@ -36,7 +36,7 @@ RUN apk add --no-cache redis && \
     pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest && \
     pip install -r ${SRC_DIR}/ckanext-harvest/pip-requirements.txt && \
     ckan config-tool ${CKAN_INI} -s app:main "ckan.harvest.mq.type = redis"
-COPY ./settings/harvester.worker.conf /etc/supervisord.d/harvester.worker.conf
+COPY ./settings/ckan.harvester.jobs.worker.supervisor.conf /etc/supervisord.d/ckan.harvester.jobs.worker.supervisor.conf
 
 RUN apk add --no-cache \ 
     geos \
@@ -95,8 +95,8 @@ COPY ./file_patch/redis.py ${CKAN_DIR}/ckan/lib/
 ## Cronjobs setup
 
 RUN pip install yacron
-COPY ./settings/cron.yaml ${APP_DIR}/
-COPY ./settings/cronjobs.conf /etc/supervisord.d/cronjobs.conf
+COPY ./settings/ckan.yacron.jobs.config.yaml ${APP_DIR}/
+COPY ./settings/ckan.yacron.jobs.worker.supervisor.conf /etc/supervisord.d/ckan.yacron.jobs.worker.supervisor.conf
 
 FROM ckan-with-extensions
 

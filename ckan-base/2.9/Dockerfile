@@ -91,7 +91,7 @@ RUN mkdir -p $CKAN_STORAGE_PATH && \
     chown -R ckan:ckan $CKAN_STORAGE_PATH
 
 COPY 2.9/setup/prerun.py ${APP_DIR}
-COPY 2.9/setup/supervisor.worker.conf /etc/supervisord.d/worker.conf
+COPY 2.9/setup/ckan.job.worker.supervisor.conf /etc/supervisord.d/ckan.job.worker.supervisor.conf
 COPY 2.9/setup/start_ckan.sh ${APP_DIR}
 RUN cp ${SRC_DIR}/ckan/wsgi.py ${APP_DIR}/
 
