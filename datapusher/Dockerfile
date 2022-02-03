@@ -1,6 +1,6 @@
 FROM alpine:3.13
 
-LABEL  MANTEINER="Open Knowledge Foundation"
+LABEL  MANTEINER="Ranieri Musella"
 
 ENV APP_DIR=/srv/app
 ENV GIT_BRANCH 0.0.17
@@ -54,11 +54,13 @@ RUN apk del .build-deps && \
     sed -i '/virtualenv/d' ${APP_DIR}/datapusher-uwsgi.ini && \
     rm -rf ${APP_DIR}/src
 
+## Overwriting settings for the service
+COPY ./datapusher-uwsgi.ini ${APP_DIR}/datapusher-uwsgi.ini
+
 # Create a local user and group to run the app
 RUN addgroup -g 92 -S www-data && \
     adduser -u 92 -h /srv/app -H -D -S -G www-data www-data
 
 EXPOSE 8800
 
-CMD ["sh", "-c", \
-    "uwsgi --plugins=http,python --http=0.0.0.0:8800 --socket=/tmp/uwsgi.sock --ini=`echo ${APP_DIR}`/datapusher-uwsgi.ini --wsgi-file=`echo ${APP_DIR}`/datapusher.wsgi"]
+CMD ["sh", "-c", "uwsgi --plugins=http,python --http=0.0.0.0:8800 --socket=/tmp/uwsgi.sock --ini=`echo ${APP_DIR}`/datapusher-uwsgi.ini --wsgi-file=`echo ${APP_DIR}`/datapusher.wsgi --module wsgi:application"]
