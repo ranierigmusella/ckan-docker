@@ -10,6 +10,7 @@ ENV DATAPUSHER_MAX_CONTENT_LENGTH 1024000
 ENV DATAPUSHER_CHUNK_SIZE 16384
 ENV DATAPUSHER_CHUNK_INSERT_ROWS 250
 ENV DATAPUSHER_DOWNLOAD_TIMEOUT 30
+ENV UWSGI_HARAKIRI 120
 
 WORKDIR ${APP_DIR}
 
@@ -52,15 +53,22 @@ RUN apk del .build-deps && \
     sed -i '/http/d' ${APP_DIR}/datapusher-uwsgi.ini && \
     sed -i '/wsgi-file/d' ${APP_DIR}/datapusher-uwsgi.ini && \
     sed -i '/virtualenv/d' ${APP_DIR}/datapusher-uwsgi.ini && \
-    rm -rf ${APP_DIR}/src
-
-## Overwriting settings for the service
-COPY ./datapusher-uwsgi.ini ${APP_DIR}/datapusher-uwsgi.ini
+    rm -rf ${APP_DIR}/src && \
+    rm -rf ${APP_DIR}/datapusher-uwsgi.ini
 
 # Create a local user and group to run the app
 RUN addgroup -g 92 -S www-data && \
     adduser -u 92 -h /srv/app -H -D -S -G www-data www-data
 
+COPY ./start_datapusher.sh ${APP_DIR}/
+COPY ./datapusher_settings.py ${APP_DIR}/
+
+RUN chmod +x ${APP_DIR}/start_datapusher.sh
+
+RUN chown www-data -R /srv/app
+
 EXPOSE 8800
 
-CMD ["sh", "-c", "uwsgi --plugins=http,python --http=0.0.0.0:8800 --socket=/tmp/uwsgi.sock --ini=`echo ${APP_DIR}`/datapusher-uwsgi.ini --wsgi-file=`echo ${APP_DIR}`/datapusher.wsgi --module wsgi:application"]
+USER www-data
+
+CMD ["/srv/app/start_datapusher.sh"]
