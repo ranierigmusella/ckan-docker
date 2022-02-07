@@ -65,7 +65,7 @@ COPY ./datapusher_settings.py ${APP_DIR}/
 
 RUN chmod +x ${APP_DIR}/start_datapusher.sh
 
-RUN chown www-data -R /srv/app
+RUN chown www-data:www-data -R /srv/app
 
 EXPOSE 8800
 

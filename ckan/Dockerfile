@@ -26,7 +26,9 @@ RUN pip install ckanext-xloader && \
 RUN rm -f ${APP_DIR}/xloader_settings.txt
 
 ## OData Endpoint Extension
+
 RUN pip install -e git+https://github.com/ranierigmusella/ckanext-odata.git@dgm-ckan2.9#egg=ckanext-odata
+COPY ./file_patch/api_info.html ${CKAN_DIR}/ckanext/datastore/templates/ajax_snippets/
 
 ## Spatial Extension
 
