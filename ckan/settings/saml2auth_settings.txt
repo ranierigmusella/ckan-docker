@@ -1,0 +1,101 @@
+#############################
+# SAML2 Authentication Extension Required
+#############################
+
+# Specifies the metadata location type
+# Options: local or remote
+ckanext.saml2auth.idp_metadata.location = remote
+
+# Path to a local file accessible on the server the service runs on
+# Ignore this config if the idp metadata location is set to: remote
+ckanext.saml2auth.idp_metadata.local_path = /opt/metadata/idp.xml
+
+# A remote URL serving aggregate metadata
+# Ignore this config if the idp metadata location is set to: local
+ckanext.saml2auth.idp_metadata.remote_url = https://kalmar2.org/simplesaml/module.php/aggregator/?id=kalmarcentral2&set=saml2
+
+# Path to a local file accessible on the server the service runs on
+# Ignore this config if the idp metadata location is set to: local and metadata is public
+ckanext.saml2auth.idp_metadata.remote_cert = /opt/metadata/kalmar2.cert
+
+# Corresponding SAML user field for firstname
+ckanext.saml2auth.user_firstname = firstname
+
+# Corresponding SAML user field for lastname
+ckanext.saml2auth.user_lastname = lastname
+
+# Corresponding SAML user field for fullname
+# (Optional: Can be used as an alternative to firstname + lastname)
+ckanext.saml2auth.user_fullname = fullname
+
+# Corresponding SAML user field for email
+ckanext.saml2auth.user_email = email
+
+#############################
+# SAML2 Authentication Extension Optional
+#############################
+
+# URL route of the endpoint where the SAML assertion is sent, also known as Assertion Consumer Service (ACS).
+# Default: /acs
+ckanext.saml2auth.acs_endpoint = /sso/post
+
+# Configuration setting that enables CKAN's internal register/login functionality as well
+# Default: False
+ckanext.saml2auth.enable_ckan_internal_login = True
+
+# List of email addresses from users that should be created as sysadmins (system administrators)
+# Note that this means that CKAN sysadmins will _only_ be managed based on this config option and will override existing user permissions in the CKAN database
+# If not set then it is ignored and CKAN sysadmins are managed through normal means
+# Default: <Not set>
+ckanext.saml2auth.sysadmins_list = mail@domain.com mail2@domain.com mail3@domain.com
+
+# Indicates that attributes that are not recognized (they are not configured in attribute-mapping),
+# will not be discarded.
+# Default: True
+ckanext.saml2auth.allow_unknown_attributes = False
+
+# A list of string values that will be used to set the <NameIDFormat> element of the metadata of an entity.
+# Default: urn:oasis:names:tc:SAML:2.0:nameid-format:persistent
+ckanext.saml2auth.sp.name_id_format = urn:oasis:names:tc:SAML:2.0:nameid-format:persistent urn:oasis:names:tc:SAML:2.0:nameid-format:transient
+
+# A string value that will be used to set the Format attribute of the <NameIDPolicy> element of the metadata of an entity.
+# Default: <Not set>
+ckanext.saml2auth.sp.name_id_policy_format = urn:oasis:names:tc:SAML:2.0:nameid-format:persistent
+
+# Entity ID (also know as Issuer)
+# Define the entity ID. Default is urn:mace:umu.se:saml:ckan:sp
+ckanext.saml2auth.entity_id = urn:gov:gsa:SAML:2.0.profiles:sp:sso:gsa:catalog-dev
+
+# Signed responses and assertions
+ckanext.saml2auth.want_response_signed = True
+ckanext.saml2auth.want_assertions_signed = False
+ckanext.saml2auth.want_assertions_or_response_signed = False
+
+# Cert & key files
+ckanext.saml2auth.key_file_path = /path/to/mykey.pem
+ckanext.saml2auth.cert_file_path = /path/to/mycert.pem
+
+# Attribute map directory
+ckanext.saml2auth.attribute_map_dir = /path/to/dir/attributemaps
+
+# Authentication context request before redirect to login
+# e.g. to ask for a PIV card with login.gov provider (https://developers.login.gov/oidc/#aal-values) use:
+ckanext.saml2auth.requested_authn_context = http://idmanagement.gov/ns/assurance/aal/3?hspd12=true
+# You can use multiple context separated by spaces
+ckanext.saml2auth.requested_authn_context = req1 req2
+
+# Define the comparison value for RequestedAuthnContext
+# Comparison could be one of this: exact, minimum, maximum or better
+ckanext.saml2auth.requested_authn_context_comparison = exact
+
+# Indicates if this entity will sign the Logout Requests originated from it
+ckanext.saml2auth.logout_requests_signed = False
+
+# Saml logout request preferred binding settings variable
+# Default: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+ckanext.saml2auth.logout_expected_binding =  urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+
+# Default fallback endpoint to redirect to if no RelayState provided in the SAML Response
+# Default: user.me (ie /dashboard)
+# e.g. to redirect to the home page
+ckanext.saml2auth.default_fallback_endpoint = home.index

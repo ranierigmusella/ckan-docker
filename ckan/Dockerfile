@@ -71,9 +71,7 @@ RUN pip install -e git+https://github.com/okfn/ckanext-sitesearch.git#egg=ckanex
     pip install -r ${SRC_DIR}/ckanext-sitesearch/requirements.txt
 
 ## Tag-Taxonomy Extension
-## Example files
-## ckan -c ckan.ini taxonomy load --filename ./src/ckanext-taxonomy/dgu-themes.rdf --name dgu --title "DGU Themes" --uri "http://data.gov.uk/themes"
-## ckan -c ckan.ini taxonomy load --filename ./src/ckanext-taxonomy/COFOG.rdf --name cofog --title cofog --uri "http://unstats.un.org/unsd/cr/registry/regcst.asp?Cl=4"
+## ckan -c ckan.ini taxonomy load --filename /srv/app/files_to_be_copied/UNDP_Capacity_Tag_Taxonomy.rdf --name "NGDP Capacity" --title "NGDP Capacity" --uri "http://data.undp.org/taxonomies/capacity/version01"
 
 RUN pip install -e git+https://github.com/ranierigmusella/python-skos.git#egg=python-skos && \
     cd ${SRC_DIR} && \
@@ -89,6 +87,14 @@ RUN ckan config-tool ${CKAN_INI} -s app:main "ckanext.stats.cache_enabled = true
 
 RUN ckan config-tool ${CKAN_INI} -s app:main "ckan.tracking_enabled = true"
 
+## SAML2 Authentication Extension
+
+COPY ./settings/saml2auth_settings.txt ${APP_DIR}/
+RUN apk add --no-cache xmlsec && \
+    pip install ckanext-saml2auth && \
+    ckan config-tool ${CKAN_INI} -s app:main -f saml2auth_settings.txt && \
+    rm -f ${APP_DIR}/saml2auth_settings.txt
+
 ## Redis in Azure fix
 
 RUN mv ${CKAN_DIR}/ckan/lib/redis.py ${CKAN_DIR}/ckan/lib/redis_official.py
@@ -101,6 +107,13 @@ COPY ./settings/ckan.yacron.jobs.config.yaml ${APP_DIR}/
 COPY ./settings/ckan.yacron.jobs.worker.supervisor.conf /etc/supervisord.d/ckan.yacron.jobs.worker.supervisor.conf
 
 FROM ckan-with-extensions
+
+## Copy any necessary files to the image
+
+RUN mkdir ${APP_DIR}/files_to_be_copied &&\
+    chown ckan:ckan ${APP_DIR}/files_to_be_copied
+
+COPY ./files_to_be_copied/* ${APP_DIR}/files_to_be_copied
 
 # Apply any patches needed to CKAN core or any of the built extensions (not the
 # runtime mounted ones)
