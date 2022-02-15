@@ -106,14 +106,18 @@ RUN pip install yacron
 COPY ./settings/ckan.yacron.jobs.config.yaml ${APP_DIR}/
 COPY ./settings/ckan.yacron.jobs.worker.supervisor.conf /etc/supervisord.d/ckan.yacron.jobs.worker.supervisor.conf
 
-FROM ckan-with-extensions
+## CKAN config specific settings
+
+RUN ckan config-tool ${CKAN_INI} -s app:main "ckan.resource_proxy.max_file_size = 3221225472"
 
 ## Copy any necessary files to the image
 
-RUN mkdir ${APP_DIR}/files_to_be_copied &&\
+RUN mkdir ${APP_DIR}/files_to_be_copied && \
     chown ckan:ckan ${APP_DIR}/files_to_be_copied
 
-COPY ./files_to_be_copied/* ${APP_DIR}/files_to_be_copied
+COPY files_to_be_copied ${APP_DIR}/files_to_be_copied
+
+FROM ckan-with-extensions
 
 # Apply any patches needed to CKAN core or any of the built extensions (not the
 # runtime mounted ones)
