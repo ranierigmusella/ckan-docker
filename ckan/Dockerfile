@@ -40,6 +40,9 @@ RUN apk add --no-cache redis && \
     ckan config-tool ${CKAN_INI} -s app:main "ckan.harvest.mq.type = redis"
 COPY ./settings/ckan.harvester.jobs.worker.supervisor.conf /etc/supervisord.d/ckan.harvester.jobs.worker.supervisor.conf
 
+## Azure Cache for Redis fix
+COPY ./file_patch/queue.py  ${SRC_DIR}/ckanext-harvest/ckanext/harvest/
+
 RUN apk add --no-cache \ 
     geos \
     geos-dev \
@@ -95,7 +98,7 @@ RUN apk add --no-cache xmlsec && \
     ckan config-tool ${CKAN_INI} -s app:main -f saml2auth_settings.txt && \
     rm -f ${APP_DIR}/saml2auth_settings.txt
 
-## Redis in Azure fix
+## Azure Cache for Redis fix
 
 RUN mv ${CKAN_DIR}/ckan/lib/redis.py ${CKAN_DIR}/ckan/lib/redis_official.py
 COPY ./file_patch/redis.py ${CKAN_DIR}/ckan/lib/
