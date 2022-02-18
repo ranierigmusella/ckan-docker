@@ -79,7 +79,7 @@ def get_connection_redis():
             HOST=urlNoRedis.split('@')[1].split(':')[0]
             PORT=urlNoRedis.split(':')[1].split('/')[0]
             DB=urlNoRedis.split('/')[1]
-            _connection_pool = redis.ConnectionPool(host = HOST, port = PORT, password = PASSWORD, db = DB)
+            _connection_pool = redis.ConnectionPool(host = HOST, port = PORT, password = PASSWORD, db = DB, decode_responses = True, encoding='utf-8')
         else :
             _connection_pool = redis.ConnectionPool.from_url(redisURL)
 
